@@ -1,0 +1,2 @@
+# Clipped Sine
+
