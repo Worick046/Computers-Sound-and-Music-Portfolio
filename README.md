@@ -7,4 +7,4 @@ You can see my
 to get diary entries of my work and progress.
 
 # *Projects*
-
+- [Clipped Sine Wave](https://github.com/Worick046/Computers-Sound-and-Music-Portfolio/tree/main/code/Clipped%20Sine%20Wave)
