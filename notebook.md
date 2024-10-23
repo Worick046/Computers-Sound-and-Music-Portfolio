@@ -24,3 +24,5 @@ combination of computers and music, and have recorded myself singing multiple pa
 them together in a DAW. I am very excited to learn how audio works at a lower level and hopefully make some
 cool sounds!
 
+## 10/22/2024
+Made a new project called DFT to understand how to perform the Discrete Fourier Transform using Python libraries.
