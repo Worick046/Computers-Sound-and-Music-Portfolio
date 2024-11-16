@@ -26,3 +26,15 @@ cool sounds!
 
 ## 10/22/2024
 Made a new project called DFT to understand how to perform the Discrete Fourier Transform using Python libraries.
+
+## 10/26/2024
+Using the skills I learned from the DFT project I made a new project called Instrument Emulator in which I
+further explored how to utilize the FFT by increaseing frequency resolution, and utilizing resuting
+amplitudes. I will be testing on instrument sounds that are under a creative commons license next.
+
+## 11/16/2024
+I have renamed the Instrument Emulator project to Sound Reconstructor as I realized the 
+scope of the project I was trying to do was too large to feasibly complete within a reasonable amount
+of time. I finished the Sound Reconstructor project in which I learned more about the limits of DFT in which
+the resulting data is much more dependent on the original sound than I had realized. I successfully recreated
+the sound of a cello with pretty good accuracy.

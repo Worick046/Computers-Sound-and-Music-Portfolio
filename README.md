@@ -10,3 +10,5 @@ to get diary entries of my work and progress.
 - [Clipped Sine Wave](https://github.com/Worick046/Computers-Sound-and-Music-Portfolio/tree/main/code/Clipped%20Sine%20Wave)
 
 - [DFT](https://github.com/Worick046/Computers-Sound-and-Music-Portfolio/tree/main/code/DFT)
+
+- Sound Reconstructor
