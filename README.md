@@ -12,3 +12,5 @@ to get diary entries of my work and progress.
 - [DFT](https://github.com/Worick046/Computers-Sound-and-Music-Portfolio/tree/main/code/DFT)
 
 - [Sound Reconstructor](https://github.com/Worick046/Computers-Sound-and-Music-Portfolio/tree/main/code/Sound%20Reconstructor)
+
+- Stereo Oscillation

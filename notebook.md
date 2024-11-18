@@ -38,3 +38,10 @@ scope of the project I was trying to do was too large to feasibly complete withi
 of time. I finished the Sound Reconstructor project in which I learned more about the limits of DFT in which
 the resulting data is much more dependent on the original sound than I had realized. I successfully recreated
 the sound of a cello with pretty good accuracy.
+
+## 11/17/2024
+I learned how to work with stereo audio in python. I thought it was going to be 2 arrays of samples,
+but it was actually 1 large array with many size 2 arrays and each of the small arrays contained 1 sample
+per channel. I used a piece I composed recently to test the program out and applied the 8D effect to it.
+
+
