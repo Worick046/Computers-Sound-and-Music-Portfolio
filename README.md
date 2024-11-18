@@ -13,4 +13,4 @@ to get diary entries of my work and progress.
 
 - [Sound Reconstructor](https://github.com/Worick046/Computers-Sound-and-Music-Portfolio/tree/main/code/Sound%20Reconstructor)
 
-- Stereo Oscillation
+- [Stereo Oscillation](https://github.com/Worick046/Computers-Sound-and-Music-Portfolio/tree/main/code/Stereo%20Oscillation)
