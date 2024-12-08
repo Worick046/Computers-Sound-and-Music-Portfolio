@@ -6,6 +6,7 @@ import numpy as np
 import scipy.signal as signal
 import sounddevice as sd
 from scipy.io import wavfile
+import matplotlib.pyplot as plt
 
 def generateSineWave(sampleRate, frequency, amplitude, duration):
     wave = np.linspace(0, 2 * np.pi * frequency * duration, sampleRate * duration)
@@ -56,11 +57,14 @@ def lowpassFilter(wave, sampleRate):
     filteredWave = signal.lfilter(b, a, wave)
     return filteredWave
 
+def plotFrequencies(wave, window):
+    x = np.linspace(0, len(window), len(window), dtype=np.int32)
+    plt.plot(x, wave[:len(window)] * window)
+    plt.show()
 
 
 if __name__ == "__main__":
-    data = generateSineWaves(48000, [220, 440, 660, 10501], [0.1, 0.1, 0.1, 0.1], 2)
+    data = generateSineWaves(48000, [220, 440, 660, 6000], [0.1, 0.1, 0.01, 0.1], 2)
     filteredData = lowpassFilter(data, 48000)
-    window = np.hanning(48000 * (len(data) // 48000))
+    window = np.hanning(48000 * 2)
     print(getFrequencyBandEnergies(data, window))
-    print(getFrequencyBandEnergies(filteredData, window))
