@@ -30,7 +30,8 @@ def integer_format(wave):
     return intwave
 
 def getFrequencyBandEnergies(wave, window):
-    fft = np.fft.rfft(wave[:len(window)] * window)
+    shift = 48000 * 0
+    fft = np.fft.rfft(wave[shift:len(window) + shift] * window)
     #fft = np.fft.rfft(wave)
     amplitudes = np.abs(fft)
     #print(amplitudes.argmax() // 2, amplitudes.max())
@@ -57,6 +58,21 @@ def lowpassFilter(wave, sampleRate):
     filteredWave = signal.lfilter(b, a, wave)
     return filteredWave
 
+def highpassFilter(wave, sampleRate):
+    cutoff = 2000.0
+    normalized_cutoff = cutoff / (sampleRate / 2)
+    b, a = signal.butter(5, normalized_cutoff, btype='high')
+    filteredWave = signal.lfilter(b, a, wave)
+    return filteredWave
+
+def bandPassFilter(wave, sampleRate):
+    cutoffs = [300.0, 2000.0]
+    normalized_cutoffs = [cutoffs[0] / (sampleRate / 2), cutoffs[1] / (sampleRate / 2)]
+    b, a = signal.butter(5, normalized_cutoffs, btype='bandpass')
+    filteredWave = signal.lfilter(b, a, wave)
+    return filteredWave
+
+
 def plotFrequencies(wave, window):
     x = np.linspace(0, len(window), len(window), dtype=np.int32)
     plt.plot(x, wave[:len(window)] * window)
@@ -64,7 +80,14 @@ def plotFrequencies(wave, window):
 
 
 if __name__ == "__main__":
-    data = generateSineWaves(48000, [220, 440, 660, 6000], [0.1, 0.1, 0.01, 0.1], 2)
-    filteredData = lowpassFilter(data, 48000)
+    data = generateSineWaves(48000, [220, 440, 660, 6000], [0.1, 0.1, 0.01, 0.1], 3)
+    data2 = generateSineWaves(48000, [220, 440, 660, 6000], [0.2, 0.1, 0.3, 0.2], 3)
+    data = np.concatenate((data, data2))
+    lowfilteredData = lowpassFilter(data, 48000)
+    highfilteredData = highpassFilter(data, 48000)
+    bandpassfilteredData = bandPassFilter(data, 48000)
     window = np.hanning(48000 * 2)
     print(getFrequencyBandEnergies(data, window))
+    print(getFrequencyBandEnergies(lowfilteredData, window))
+    print(getFrequencyBandEnergies(highfilteredData, window))
+    print(getFrequencyBandEnergies(bandpassfilteredData, window))
