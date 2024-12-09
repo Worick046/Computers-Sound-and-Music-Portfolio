@@ -29,48 +29,60 @@ def integer_format(wave):
     intwave = np.add(intwave, tempwave.astype(np.int16))
     return intwave
 
-def getFrequencyBandEnergies(wave, window):
-    shift = 48000 * 0
+def getFrequencyBandEnergies(wave, window, shift, sampleRate):
     fft = np.fft.rfft(wave[shift:len(window) + shift] * window)
     #fft = np.fft.rfft(wave)
     amplitudes = np.abs(fft)
+    frequencies = np.fft.rfftfreq(len(window), d=1./sampleRate)
     #print(amplitudes.argmax() // 2, amplitudes.max())
-    lowband = 0
-    midband = 0
-    highband = 0
-    maximum = amplitudes.max()
-    for i in range(len(amplitudes) // 2):
-        #if(amplitudes[i] < maximum / 16):
-        #    amplitudes[i] = 0
-        #print(i // 2, amplitudes[i])
-        if i // 2 <= 300:
-            lowband += amplitudes[i]
-        if i // 2 > 300 and i // 2 <= 2000:
-            midband += amplitudes[i]
-        if i // 2 > 2000:
-            highband += amplitudes[i]
-    return [lowband, midband, highband]
+    amplitudes[amplitudes < 100.] = 0.0
+    lowband = np.sum(np.where(frequencies <= 300, amplitudes, 0))
+    midband = np.sum(np.where((frequencies > 300) & (frequencies <= 2000), amplitudes, 0))
+    highband = np.sum(np.where(frequencies > 2000, amplitudes, 0))
+    for i in range(2000):
+        print(frequencies[i], amplitudes[i])
+    rescale = sampleRate / len(window)
+    return [lowband * rescale, midband * rescale, highband * rescale]
 
-def lowpassFilter(wave, sampleRate):
+def lowpassFilter(wave, sampleRate, strength):
     cutoff = 300.0
     normalized_cutoff = cutoff / (sampleRate / 2)
-    b, a = signal.butter(5, normalized_cutoff, btype='low')
+    b, a = signal.butter(strength, normalized_cutoff, btype='low')
     filteredWave = signal.lfilter(b, a, wave)
     return filteredWave
 
-def highpassFilter(wave, sampleRate):
+def highpassFilter(wave, sampleRate, strength):
     cutoff = 2000.0
     normalized_cutoff = cutoff / (sampleRate / 2)
-    b, a = signal.butter(5, normalized_cutoff, btype='high')
+    b, a = signal.butter(strength, normalized_cutoff, btype='high')
     filteredWave = signal.lfilter(b, a, wave)
     return filteredWave
 
-def bandPassFilter(wave, sampleRate):
+def bandStopFilter(wave, sampleRate, strength):
     cutoffs = [300.0, 2000.0]
     normalized_cutoffs = [cutoffs[0] / (sampleRate / 2), cutoffs[1] / (sampleRate / 2)]
-    b, a = signal.butter(5, normalized_cutoffs, btype='bandpass')
+    b, a = signal.butter(strength, normalized_cutoffs, btype='bandstop')
     filteredWave = signal.lfilter(b, a, wave)
     return filteredWave
+
+
+def getBandEnergyArray(data, sampleRate, window):
+    numberOfSamples = len(data)
+    shift = sampleRate // 10
+    numberOfFullShifts = numberOfSamples // shift - len(window) // shift + 1
+    bandEnergyArray = []
+    for i in range(numberOfFullShifts):
+        bandEnergyArray.append(getFrequencyBandEnergies(data, window, shift * i))
+    return bandEnergyArray
+
+def applyToneControl(data, sampleRate, bandEnergyArray):
+    shift = sampleRate // 10
+    filterData = np.zeros(len(data))
+    for i in range(len(bandEnergyArray)):
+        print()
+    return filterData
+        
+
 
 
 def plotFrequencies(wave, window):
@@ -80,14 +92,10 @@ def plotFrequencies(wave, window):
 
 
 if __name__ == "__main__":
-    data = generateSineWaves(48000, [220, 440, 660, 6000], [0.1, 0.1, 0.01, 0.1], 3)
+    data = generateSineWaves(48000, [220, 440, 660, 6000], [0.1, 0.1, 0.0, 0.1], 3)
     data2 = generateSineWaves(48000, [220, 440, 660, 6000], [0.2, 0.1, 0.3, 0.2], 3)
     data = np.concatenate((data, data2))
-    lowfilteredData = lowpassFilter(data, 48000)
-    highfilteredData = highpassFilter(data, 48000)
-    bandpassfilteredData = bandPassFilter(data, 48000)
-    window = np.hanning(48000 * 2)
-    print(getFrequencyBandEnergies(data, window))
-    print(getFrequencyBandEnergies(lowfilteredData, window))
-    print(getFrequencyBandEnergies(highfilteredData, window))
-    print(getFrequencyBandEnergies(bandpassfilteredData, window))
+    filteredData = lowpassFilter(data, 48000, 5)
+    window = np.hanning(48000 // 10)
+    print(getFrequencyBandEnergies(data, window, 0, 48000))
+    print()
