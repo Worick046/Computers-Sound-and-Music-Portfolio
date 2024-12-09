@@ -55,3 +55,9 @@ This was a challenging project for me. I understand better that windowing functi
 and that in order to have a smooth filtering experience when you are applying a filter multiple times across a waveform,
 you need to keep track of the filter delay values so the filter can pick up where it left off instead of using it's starting
 vectors every time as that introduces an interesting and undesired effect.
+
+## 12/9/2024
+Started and finished the popgen project. I took the popgen program written by Bart Massey and modified it to add harmonics
+to the notes as they were just pure sine waves, I locked the melody so it does not go too high and become irritating and also
+does not go too low and mix with the bass chords. Last thing I did was add a rhythm generator that generates random rythms
+consisting of quarter and eighth notes.
