@@ -44,4 +44,14 @@ I learned how to work with stereo audio in python. I thought it was going to be 
 but it was actually 1 large array with many size 2 arrays and each of the small arrays contained 1 sample
 per channel. I used a piece I composed recently to test the program out and applied the 8D effect to it.
 
+## 11/25/2024
+Started Adaptive Tone Control Project. Learned how to use a low pass filter and set up a frequency band measuring
+function.
 
+## 12/8/2024
+Finished up the Adaptive Tone Control Project. I have a much better understanding of windowing functions, audio
+filters, measuring frequency, and the amount of little mistakes that can completely change the resulting waveform.
+This was a challenging project for me. I understand better that windowing functions can act as a low pass filter themselves,
+and that in order to have a smooth filtering experience when you are applying a filter multiple times across a waveform,
+you need to keep track of the filter delay values so the filter can pick up where it left off instead of using it's starting
+vectors every time as that introduces an interesting and undesired effect.
