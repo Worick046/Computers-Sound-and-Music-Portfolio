@@ -2,11 +2,29 @@
 #This allowed for understanding how to create a lowpass filter in python.
 
 
+from random import sample
 import numpy as np
 import scipy.signal as signal
 import sounddevice as sd
 from scipy.io import wavfile
 import matplotlib.pyplot as plt
+
+
+lowCutoff = 300
+midCutoff = [300, 2000]
+highCutoff = 2000
+sampleRate = 48000
+lowNormCutoff = lowCutoff / (sampleRate / 2)
+midNormCutoff = [midCutoff[0] / (sampleRate / 2), midCutoff[1] / (sampleRate / 2)]
+highNormCutoff = highCutoff / (sampleRate / 2)
+lowcoeffs = signal.butter(5, lowNormCutoff, "low")
+midcoeffs = signal.butter(5, midNormCutoff, "bandpass")
+highcoeffs = signal.butter(5, highNormCutoff, "high")
+
+lowfilterdelay = signal.lfilter_zi(lowcoeffs[0], lowcoeffs[1])
+midfilterdelay = signal.lfilter_zi(midcoeffs[0], midcoeffs[1])
+highfilterdelay = signal.lfilter_zi(highcoeffs[0], highcoeffs[1])
+
 
 def generateSineWave(sampleRate, frequency, amplitude, duration):
     wave = np.linspace(0, 2 * np.pi * frequency * duration, sampleRate * duration)
@@ -71,42 +89,58 @@ def getFrequencyBandEnergies(wave, window, shift, sampleRate):
     rescale = sampleRate / len(window)
     return [lowband * rescale, midband * rescale, highband * rescale]
 
-def lowpassFilter(wave, sampleRate, strength):
-    cutoff = 300.0
-    normalized_cutoff = cutoff / (sampleRate / 2)
-    b, a = signal.butter(strength, normalized_cutoff, btype='low')
-    filteredWave = signal.lfilter(b, a, wave)
+def lowPassFilter(wave, sampleRate, strength):
+    global lowcoeffs
+    global lowfilterdelay
+    filteredWave, lowfilterdelay = signal.lfilter(lowcoeffs[0], lowcoeffs[1], wave, zi=lowfilterdelay)
     return filteredWave
 
-def highpassFilter(wave, sampleRate, strength):
-    cutoff = 2000.0
-    normalized_cutoff = cutoff / (sampleRate / 2)
-    b, a = signal.butter(strength, normalized_cutoff, btype='high')
-    filteredWave = signal.lfilter(b, a, wave)
+def highPassFilter(wave, sampleRate, strength):
+    global highcoeffs
+    global highfilterdelay
+    filteredWave, highfilterdelay = signal.lfilter(highcoeffs[0], highcoeffs[1], wave, zi=highfilterdelay)
     return filteredWave
 
 def bandPassFilter(wave, sampleRate, strength):
-    cutoffs = [300.0, 2000.0]
-    normalized_cutoffs = [cutoffs[0] / (sampleRate / 2), cutoffs[1] / (sampleRate / 2)]
-    b, a = signal.butter(strength, normalized_cutoffs, btype='bandpass')
-    filteredWave = signal.lfilter(b, a, wave)
+    global midcoeffs
+    global midfilterdelay
+    filteredWave, midfilterdelay = signal.lfilter(midcoeffs[0], midcoeffs[1], wave, zi=midfilterdelay)
     return filteredWave
 
 
 def getBandEnergyArray(data, sampleRate, window):
-    numberOfSamples = len(data)
-    shift = sampleRate // 10
-    numberOfFullShifts = numberOfSamples // shift - len(window) // shift + 1
+    shift = len(window)
+    numberOfSlices = len(data) // shift
     bandEnergyArray = []
-    for i in range(numberOfFullShifts):
-        bandEnergyArray.append(getFrequencyBandEnergies(data, window, shift * i))
+    for i in range(numberOfSlices):
+        bandEnergyArray.append(getFrequencyBandEnergies(data, window, shift * i, sampleRate))
+
     return bandEnergyArray
 
-def applyToneControl(data, sampleRate, bandEnergyArray):
-    shift = sampleRate // 10
+
+
+def applyToneControl(data, sampleRate, bandEnergyArray, window):
+    shift = len(window)
     filterData = np.zeros(len(data))
     for i in range(len(bandEnergyArray)):
-        print()
+        #Separate Bands
+        lowData = lowPassFilter(data[shift * i:shift * (i + 1)], 48000, 5)
+        midData = bandPassFilter(data[shift * i:shift * (i + 1)], 48000, 5)
+        highData = highPassFilter(data[shift * i:shift * (i + 1)], 48000, 5)
+
+        average = np.average(np.array(bandEnergyArray[i]))
+        filteredBandEnergyArray = getFrequencyBandEnergies(lowData + midData + highData, window, 0, sampleRate)
+        #Scale each band to average
+        lowscale = average / filteredBandEnergyArray[0]
+        midscale = average / filteredBandEnergyArray[1]
+        highscale = average / filteredBandEnergyArray[2]
+        lowData = np.multiply(lowData, lowscale)
+        midData = np.multiply(midData, midscale)
+        highData = np.multiply(highData, highscale)
+
+
+        #Combine the bands back together
+        filterData[shift * i: shift * (i + 1)] = lowData + midData + highData
     return filterData
         
 
@@ -119,16 +153,17 @@ def plotFrequencies(wave, window):
 
 
 if __name__ == "__main__":
-    data = generateSineWaves(48000, [220, 440, 660, 6000], [0.1, 0.1, 0.0, 0.1], 3)
-    data2 = generateSineWaves(48000, [220, 440, 660, 6000], [0.2, 0.1, 0.3, 0.2], 3)
+    data = generateSineWaves(48000, [220, 440, 660, 6000], [0.1, 0.1, 0.1, 0.1], 3)
+    data2 = generateSineWaves(48000, [220, 440, 660, 6000], [0.2, 0.3, 0.3, 0.2], 3)
     data = np.concatenate((data, data2))
-    lowfilteredData = lowpassFilter(data, 48000, 5)
+    lowfilteredData = lowPassFilter(data, 48000, 5)
     midfilteredData = bandPassFilter(data, 48000, 5)
-    highfilteredData = highpassFilter(data, 48000, 5)
+    highfilteredData = highPassFilter(data, 48000, 5)
     window = np.hanning(48000 // 10)
-    print(len(lowfilteredData))
-    getFrequencyBandEnergies(lowfilteredData, window, 0, 48000)
-    print(getFrequencyBandEnergies(data, window, 0, 48000))
-    print(getFrequencyBandEnergies(lowfilteredData, window, 0, 48000))
-    print(getFrequencyBandEnergies(midfilteredData, window, 0, 48000))
-    print(getFrequencyBandEnergies(highfilteredData, window, 0, 48000))
+    bandEnergyArray = getBandEnergyArray(data, 48000, window)
+    filteredData = applyToneControl(data, 48000, bandEnergyArray, window)
+    filterBandEnergyArray = getBandEnergyArray(filteredData, 48000, window)
+    for i in range(len(bandEnergyArray)):
+        print(bandEnergyArray[i], filterBandEnergyArray[i])
+
+    wavfile.write("Test.wav", 48000, filteredData)
