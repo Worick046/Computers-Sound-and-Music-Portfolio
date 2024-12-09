@@ -35,12 +35,39 @@ def getFrequencyBandEnergies(wave, window, shift, sampleRate):
     amplitudes = np.abs(fft)
     frequencies = np.fft.rfftfreq(len(window), d=1./sampleRate)
     #print(amplitudes.argmax() // 2, amplitudes.max())
+
+    #Filter amplitudes through a threshold
     amplitudes[amplitudes < 100.] = 0.0
-    lowband = np.sum(np.where(frequencies <= 300, amplitudes, 0))
-    midband = np.sum(np.where((frequencies > 300) & (frequencies <= 2000), amplitudes, 0))
-    highband = np.sum(np.where(frequencies > 2000, amplitudes, 0))
-    for i in range(2000):
-        print(frequencies[i], amplitudes[i])
+
+    #Filter amplitudes into three frequency categories 0 - 300, 300 - 2000, 2000+ . Any amplitudes that are at 0 are discarded.
+    lowband = []
+    midband = []
+    highband = []
+    for i in range(len(amplitudes)):
+        if frequencies[i] <= 300 and amplitudes[i] > 0:
+            lowband.append(amplitudes[i])
+        elif frequencies[i] > 300 and frequencies[i] <= 2000 and amplitudes[i] > 0:
+            midband.append(amplitudes[i])
+        elif frequencies[i] > 2000 and amplitudes[i] > 0:
+            highband.append(amplitudes[i])
+
+
+    #Take the average amplitude at each of the categories or set the average to 0 if there are no amplitudes in the band.
+    if len(lowband) > 0:
+        lowband = np.average(np.array(lowband))
+    else:
+        lowband = 0
+
+    if len(midband) > 0:
+        midband = np.average(np.array(midband))
+    else:
+        midband = 0
+
+    if len(highband) > 0:
+        highband = np.average(np.array(highband))
+    else:
+        highband = 0
+
     rescale = sampleRate / len(window)
     return [lowband * rescale, midband * rescale, highband * rescale]
 
@@ -58,10 +85,10 @@ def highpassFilter(wave, sampleRate, strength):
     filteredWave = signal.lfilter(b, a, wave)
     return filteredWave
 
-def bandStopFilter(wave, sampleRate, strength):
+def bandPassFilter(wave, sampleRate, strength):
     cutoffs = [300.0, 2000.0]
     normalized_cutoffs = [cutoffs[0] / (sampleRate / 2), cutoffs[1] / (sampleRate / 2)]
-    b, a = signal.butter(strength, normalized_cutoffs, btype='bandstop')
+    b, a = signal.butter(strength, normalized_cutoffs, btype='bandpass')
     filteredWave = signal.lfilter(b, a, wave)
     return filteredWave
 
@@ -95,7 +122,13 @@ if __name__ == "__main__":
     data = generateSineWaves(48000, [220, 440, 660, 6000], [0.1, 0.1, 0.0, 0.1], 3)
     data2 = generateSineWaves(48000, [220, 440, 660, 6000], [0.2, 0.1, 0.3, 0.2], 3)
     data = np.concatenate((data, data2))
-    filteredData = lowpassFilter(data, 48000, 5)
+    lowfilteredData = lowpassFilter(data, 48000, 5)
+    midfilteredData = bandPassFilter(data, 48000, 5)
+    highfilteredData = highpassFilter(data, 48000, 5)
     window = np.hanning(48000 // 10)
+    print(len(lowfilteredData))
+    getFrequencyBandEnergies(lowfilteredData, window, 0, 48000)
     print(getFrequencyBandEnergies(data, window, 0, 48000))
-    print()
+    print(getFrequencyBandEnergies(lowfilteredData, window, 0, 48000))
+    print(getFrequencyBandEnergies(midfilteredData, window, 0, 48000))
+    print(getFrequencyBandEnergies(highfilteredData, window, 0, 48000))
