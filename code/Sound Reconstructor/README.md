@@ -12,3 +12,6 @@ accurate frequencies that were not restricted to being integers.
 ## License information
 This project uses a sound sample from the tinySOL database which is licensed under 
 the [Creative Commons Attribution 4.0 International (CC BY 4.0) license](https://creativecommons.org/licenses/by/4.0/)
+
+Details of the tinySOL database can be found here including authors.
+https://zenodo.org/records/3685331
