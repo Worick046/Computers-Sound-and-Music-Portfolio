@@ -59,10 +59,10 @@ class NeuralNet1d(nn.Module):
     def __init__(self):
         super().__init__()
         self.conv1 = nn.Conv1d(1, 6, 64)
-        self.pool = nn.MaxPool1d(2, 2)
-        self.conv2 = nn.Conv1d(6, 10, 64)
-        self.fc1 = nn.Linear(54650, 360)
-        self.fc2 = nn.Linear(360, 120)
+        self.pool = nn.MaxPool1d(4, 4)
+        self.conv2 = nn.Conv1d(6, 16, 64)
+        self.fc1 = nn.Linear(21728, 480)
+        self.fc2 = nn.Linear(480, 120)
         self.fc3 = nn.Linear(120, 14)
 
     def forward(self, x):
@@ -177,14 +177,17 @@ def loadTrainingAndTestingDatasets():
 
 def runModelTest(testingbatches, testingLabels, numberOfTestingBatches, batchSize, identifier):
     correctPredictions = 0
+    confusionMatrix = np.zeros((14, 14))
     for i in range(numberOfTestingBatches):
         outputs = identifier(testingbatches[i])
         testingBatchLabels = testingLabels[i * batchSize: i * batchSize + batchSize]
         for j in range(len(outputs)):
             if outputs[j].argmax() == testingBatchLabels[j].argmax():
                 correctPredictions += 1
+            confusionMatrix[outputs[j].argmax()][testingBatchLabels[j].argmax()] += 1
 
     print(str(correctPredictions) + "/" + str(numberOfTestingBatches * 14))
+    return confusionMatrix
 
 
 def trainAndSaveModel():
@@ -246,15 +249,15 @@ def trainAndSaveModel():
 
             running_loss += loss.item()
             if j % 100 == 99:
-                runModelTest(testingbatches, testingLabels, numberOfTestingBatches, batchSize, identifier)
                 averageLoss = running_loss / 100
                 print(averageLoss)
                 running_loss = 0
 
 
-    runModelTest(testingbatches, testingLabels, numberOfTestingBatches, batchSize, identifier)
+    confusionMatrix = runModelTest(testingbatches, testingLabels, numberOfTestingBatches, batchSize, identifier)
     print("Done with training")
     torch.save(identifier.state_dict(), folderPathName + "model.pth")
+    np.save("ConfusionMatrix.npy", confusionMatrix)
 
 
 if __name__ == "__main__":
