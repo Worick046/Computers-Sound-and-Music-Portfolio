@@ -313,7 +313,7 @@ def trainAndSaveModel():
             running_loss += loss.item()
             if j % 100 == 99:
                 averageLoss = running_loss / 100
-                print(averageLoss)
+                print("Average Loss: " + str(averageLoss))
                 running_loss = 0
 
 
