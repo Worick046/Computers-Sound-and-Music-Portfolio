@@ -140,8 +140,32 @@ def createTrainingAndTestingDatasets():
     print("Data Saved")
 
 
+def loadTrainingAndTestingDatasets():
+    try:
+        trainingLabels = np.load(folderPathName + "trainingLabels.npy")
+        testingLabels = np.load(folderPathName + "testingLabels.npy")
+        trainingData = np.load(folderPathName + "trainingData.npy")
+        testingData = np.load(folderPathName + "testingData.npy")
+    except:
+        print("Error: Could not find all required files")
+        print("Files Needed")
+        print("trainingLabels.npy")
+        print("testingLabels.npy")
+        print("trainingData.npy")
+        print("testingData.npy")
+
+    return [trainingLabels, trainingData, testingLabels, testingData]
+
 if __name__ == "__main__":
+    dataset = loadTrainingAndTestingDatasets()
+    trainingLabels = torch.from_numpy(dataset[0]).to(torch.float32)
+    trainingData = torch.from_numpy(dataset[1]).to(torch.float32)
+    testingLabels = torch.from_numpy(dataset[2]).to(torch.float32)
+    testingData = torch.from_numpy(dataset[3]).to(torch.float32)
+
+    identifier = NeuralNet1d()
+    identifier(trainingData[0:1])
 
 
-    #Identifier = NeuralNet1d()
-    #Identifier(dataset[0:1])
+
+
