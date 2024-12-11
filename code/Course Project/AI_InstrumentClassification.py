@@ -9,12 +9,9 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 import random
+import sys
 
-run_mode = "IDE"
-if run_mode == "IDE":
-    folderPathName = "./code/Course Project/"
-else:
-    folderPathName = "./"
+folderPathName = "./"
 
 
 #Retrieves a wavfile from a filename at a specific index of the metadata.
@@ -333,9 +330,19 @@ def loadModel():
     print(ConfusionMatrix)
 
 if __name__ == "__main__":
-    loadModel()
-    metadata = read_csv(folderPathName + "TinySOL_metadatamod.csv")
-    print("Retrieving Sound data")
-    wavedata, labels = loadSamples(metadata)
-    print("Sound Data Retrived")
+    if len(sys.argv) == 2:
+        if sys.argv[1] == "-t":
+            trainAndSaveModel()
+            exit()
+        if sys.argv[1] == "-d":
+            createTrainingAndTestingDatasets()
+            exit()
+        if sys.argv[1] == "-r":
+            loadModel()
+            exit()
+
+    print("Potential Arguments are -t, -d, and -r")
+    print("-t: Train and save the model")
+    print("-d: Create training and testing datasets")
+    print("-r: Print confusion matrix")
 
