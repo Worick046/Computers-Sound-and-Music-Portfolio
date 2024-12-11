@@ -1,3 +1,4 @@
+from pdb import run
 from scipy.io import wavfile
 import sounddevice as sd
 import numpy as np
@@ -57,12 +58,12 @@ def NormalizeNdArray(array):
 class NeuralNet1d(nn.Module):
     def __init__(self):
         super().__init__()
-        self.conv1 = nn.Conv1d(1, 4, 64)
+        self.conv1 = nn.Conv1d(1, 6, 64)
         self.pool = nn.MaxPool1d(2, 2)
-        self.conv2 = nn.Conv1d(4, 10, 64)
-        self.fc1 = nn.Linear(54650, 120)
-        self.fc2 = nn.Linear(120, 84)
-        self.fc3 = nn.Linear(84, 14)
+        self.conv2 = nn.Conv1d(6, 10, 64)
+        self.fc1 = nn.Linear(54650, 360)
+        self.fc2 = nn.Linear(360, 120)
+        self.fc3 = nn.Linear(120, 14)
 
     def forward(self, x):
         x = self.pool(F.relu(self.conv1(x)))
@@ -174,6 +175,18 @@ def loadTrainingAndTestingDatasets():
     return [trainingLabels, trainingData, testingLabels, testingData]
 
 
+def runModelTest(testingbatches, testingLabels, numberOfTestingBatches, batchSize, identifier):
+    correctPredictions = 0
+    for i in range(numberOfTestingBatches):
+        outputs = identifier(testingbatches[i])
+        testingBatchLabels = testingLabels[i * batchSize: i * batchSize + batchSize]
+        for j in range(len(outputs)):
+            if outputs[j].argmax() == testingBatchLabels[j].argmax():
+                correctPredictions += 1
+
+    print(str(correctPredictions) + "/" + str(numberOfTestingBatches * 14))
+
+
 def trainAndSaveModel():
     dataset = loadTrainingAndTestingDatasets()
     trainingLabels = torch.from_numpy(dataset[0]).to(torch.float32)
@@ -220,8 +233,9 @@ def trainAndSaveModel():
 
     print(trainingbatches[0:batchSize].shape)
 
-    number_of_epochs = 30
-    for i in range(number_of_epochs):
+    number_of_epochs = 70
+    averageLoss = 2
+    while averageLoss > 0.003:
         running_loss = 0
         for j in range(numberOfTrainingBatches):
             optimizer.zero_grad()
@@ -232,21 +246,14 @@ def trainAndSaveModel():
 
             running_loss += loss.item()
             if j % 100 == 99:
-                print(running_loss / 100)
+                runModelTest(testingbatches, testingLabels, numberOfTestingBatches, batchSize, identifier)
+                averageLoss = running_loss / 100
+                print(averageLoss)
                 running_loss = 0
 
 
+    runModelTest(testingbatches, testingLabels, numberOfTestingBatches, batchSize, identifier)
     print("Done with training")
-    correctPredictions = 0
-    print(testingData[0:1].shape)
-    for i in range(numberOfTestingBatches):
-        outputs = identifier(testingbatches[i])
-        testingBatchLabels = testingLabels[i * batchSize: i * batchSize + batchSize]
-        for j in range(len(outputs)):
-            if outputs[j].argmax() == testingBatchLabels[j].argmax():
-                correctPredictions += 1
-
-    print(str(correctPredictions) + "/" + str(numberOfTestingBatches * 14))
     torch.save(identifier.state_dict(), folderPathName + "model.pth")
 
 
