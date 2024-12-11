@@ -60,7 +60,7 @@ vectors every time as that introduces an interesting and undesired effect.
 Started and finished the popgen project. I took the popgen program written by Bart Massey and modified it to add harmonics
 to the notes as they were just pure sine waves, I locked the melody so it does not go too high and become irritating and also
 does not go too low and mix with the bass chords. Last thing I did was add a rhythm generator that generates random rythms
-consisting of quarter and eighth notes.
+consisting of eighth notes up to half notes.
 
 
 ## 12/10/2024

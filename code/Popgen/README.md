@@ -15,7 +15,7 @@ Patrick Wood 2024
 
 The program has improved note sounds that consist of added harmonics
 to the original sine wave, a locked melody that won't go too high or too low,
-and a rhythm generator that creates combinations of quarter and eighth notes.
+and a rhythm generator that creates combinations of quarter and eighth notes up to half notes.
 
 # License
 
