@@ -27,6 +27,7 @@ def getWavfileSample(dataframe, index):
 def loadSamples(dataLabels):
     data = []
     instrumentTypes = dataLabels['Instrument (abbr.)'].unique()
+    print(instrumentTypes)
     labels = []
     increment = 0
     for i in range(len(dataLabels)):
@@ -257,15 +258,18 @@ def trainAndSaveModel():
     confusionMatrix = runModelTest(testingbatches, testingLabels, numberOfTestingBatches, batchSize, identifier)
     print("Done with training")
     torch.save(identifier.state_dict(), folderPathName + "model.pth")
-    np.save("ConfusionMatrix.npy", confusionMatrix)
+    np.save(folderPathName + "ConfusionMatrix.npy", confusionMatrix)
 
+def loadModel():
+    identifier = NeuralNet1d()
+    identifier.load_state_dict(torch.load(folderPathName + "model.pth", weights_only=True))
+    ConfusionMatrix = np.load(folderPathName + "confusionMatrix.npy")
+    print(ConfusionMatrix)
 
 if __name__ == "__main__":
-    trainAndSaveModel()
-
-
-
-            
-
-
+    loadModel()
+    metadata = read_csv(folderPathName + "TinySOL_metadatamod.csv")
+    print("Retrieving Sound data")
+    wavedata, labels = loadSamples(metadata)
+    print("Sound Data Retrived")
 
