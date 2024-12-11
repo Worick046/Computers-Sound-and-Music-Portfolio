@@ -61,3 +61,18 @@ Started and finished the popgen project. I took the popgen program written by Ba
 to the notes as they were just pure sine waves, I locked the melody so it does not go too high and become irritating and also
 does not go too low and mix with the bass chords. Last thing I did was add a rhythm generator that generates random rythms
 consisting of quarter and eighth notes.
+
+
+## 12/10/2024
+I built an AI model to classify instruments based on audio data. The model was a success and I was able to get a 86.2% accuracy
+in classifying the data. I wanted to try my hand at audio analysis for the final project because I have a great interest
+in data analysis. Through building this program I learned so much about how important context is to audio analysis.
+In some ways I was only able to get to a 86.2% accuracy. I used a model that only looked at frequencies in a snapshot
+of time. I have read that other models can be built to include how the frequencies change over time. It may or may
+not work too well on instruments that are playing a continuous sound as I don't imagine that would have a large amount
+of frequency change over time but maybe the start and end of an instruments sound are important. 
+
+## 12/11/2024
+I have finished up the final course project for AI instrument classification including a more in depth comparison on
+how the model did with specific instruments. I made it able to be run from the command line as well as giving that
+capability to my other programs for grading purposes.
