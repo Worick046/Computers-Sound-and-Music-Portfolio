@@ -3,8 +3,10 @@ import sounddevice as sd
 import numpy as np
 import torch
 from pandas import read_csv
+from torch.cuda import is_available
 import torch.nn as nn
 import torch.nn.functional as F
+import torch.optim as optim
 import random
 
 run_mode = "IDE"
@@ -55,17 +57,17 @@ def NormalizeNdArray(array):
 class NeuralNet1d(nn.Module):
     def __init__(self):
         super().__init__()
-        self.conv1 = nn.Conv1d(1, 6, 6)
+        self.conv1 = nn.Conv1d(1, 6, 1000)
         self.pool = nn.MaxPool1d(2, 2)
-        self.conv2 = nn.Conv1d(6, 16, 6)
-        self.fc1 = nn.Linear(5509, 120)
+        self.conv2 = nn.Conv1d(6, 10, 1000)
+        self.fc1 = nn.Linear(47630, 120)
         self.fc2 = nn.Linear(120, 84)
         self.fc3 = nn.Linear(84, 14)
 
     def forward(self, x):
         x = self.pool(F.relu(self.conv1(x)))
         x = self.pool(F.relu(self.conv2(x)))
-        x = torch.flatten(x, 1)
+        x = torch.flatten(x)
         x = F.relu(self.fc1(x))
         x = F.relu(self.fc2(x))
         x = self.fc3(x)
@@ -154,18 +156,97 @@ def loadTrainingAndTestingDatasets():
         print("trainingData.npy")
         print("testingData.npy")
 
+    #Uncompress Label data.
+    uncompressedTrainingLabels = []
+    uncompressedTestingLabels = []
+    for i in range(len(trainingLabels)):
+        newLabel = np.zeros(14)
+        newLabel[trainingLabels[i]] = 1
+        uncompressedTrainingLabels.append(newLabel)
+    for i in range(len(testingLabels)):
+        newLabel = np.zeros(14)
+        newLabel[testingLabels[i]] = 1
+        uncompressedTestingLabels.append(newLabel)
+
+    trainingLabels = np.array(uncompressedTrainingLabels)
+    testingLabels = np.array(uncompressedTestingLabels)
+    
     return [trainingLabels, trainingData, testingLabels, testingData]
 
-if __name__ == "__main__":
+
+def trainAndSaveModel():
     dataset = loadTrainingAndTestingDatasets()
     trainingLabels = torch.from_numpy(dataset[0]).to(torch.float32)
     trainingData = torch.from_numpy(dataset[1]).to(torch.float32)
     testingLabels = torch.from_numpy(dataset[2]).to(torch.float32)
     testingData = torch.from_numpy(dataset[3]).to(torch.float32)
 
-    identifier = NeuralNet1d()
-    identifier(trainingData[0:1])
+    if torch.cuda.is_available():
+        print("Cuda support detected, moving data to VRAM")
+        device = 'cuda'
+        trainingLabels = trainingLabels.to(device)
+        testingLabels = testingLabels.to(device)
+        trainingData = trainingData.to(device)
+        testingData = testingData.to(device)
+    else:
+        device = 'cpu'
 
+    print("initialize model")
+    identifier = NeuralNet1d().to(device)
+    criterion = nn.CrossEntropyLoss()
+    optimizer = optim.SGD(identifier.parameters(), lr=0.001, momentum=0.9)
+
+    number_of_epochs = 10
+    for i in range(number_of_epochs):
+        running_loss = 0
+        for i in range(len(trainingData)):
+            optimizer.zero_grad()
+            outputs = identifier(trainingData[i:i + 1])
+            loss = criterion(outputs, trainingLabels[i])
+            loss.backward()
+            optimizer.step()
+
+            running_loss += loss.item()
+            if i % 100 == 99:
+                print(running_loss / 100)
+                running_loss = 0
+
+
+    correctPredictions = 0
+    for i in range(len(testingData)):
+        outputs = identifier(testingData[i:i + 1])
+        if outputs.argmax() == testingLabels.argmax():
+            correctPredictions += 1
+
+    print(str(correctPredictions) + "/" + str(len(testingData)))
+    torch.save(identifier.state_dict(), folderPathName + "model.pth")
+
+
+if __name__ == "__main__":
+    identifier = NeuralNet1d()
+    identifier.load_state_dict(torch.load(folderPathName + "model.pth", weights_only=True))
+    
+    dataset = loadTrainingAndTestingDatasets()
+    trainingLabels = torch.from_numpy(dataset[0]).to(torch.float32)
+    trainingData = torch.from_numpy(dataset[1]).to(torch.float32)
+    testingLabels = torch.from_numpy(dataset[2]).to(torch.float32)
+    testingData = torch.from_numpy(dataset[3]).to(torch.float32)
+
+    if torch.cuda.is_available():
+        print("Cuda support detected, moving data to VRAM")
+        device = 'cuda'
+        trainingLabels = trainingLabels.to(device)
+        testingLabels = testingLabels.to(device)
+        trainingData = trainingData.to(device)
+        testingData = testingData.to(device)
+    else:
+        device = 'cpu'
+
+    identifier = identifier.to(device)
+
+
+
+            
 
 
 
