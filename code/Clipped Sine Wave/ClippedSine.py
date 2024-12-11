@@ -24,7 +24,9 @@ def generateClippedWave(frequency):
     wave = wave * 32767 * 0.5
     threshold = 32767 / 4
     wave = np.clip(wave, -threshold, threshold)
-    return wave.astype(np.int16)
+    wave = wave.astype(np.int16)
+    wavfile.write("clipped.wav", 48000, wave)
+    return wave
 
 if __name__ == '__main__':
     generateSinewave(440)

@@ -164,7 +164,7 @@ def readWav(filename):
 #Program entry point
 if __name__ == "__main__":
     #Get 1 second sample of cello.
-    celloWave = readWav("./code/Sound Reconstructor/Vc-ord-G3-mf-2c-N.wav")
+    celloWave = readWav("./Vc-ord-G3-mf-2c-N.wav")
     tones = generateTonesFromWave(celloWave)
 
     #Print the fundamental frequency.

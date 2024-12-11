@@ -37,10 +37,10 @@ def oscillate(Data, invertedFrequency):
 #Program entry point
 if __name__ == "__main__":
     #Define file paths
-    filepath1 = "./code/Stereo Oscillation/Oscillations.wav"
-    filepath2 = "./code/Stereo Oscillation/Oscillationsmono.wav"
-    destinationPath1 = "./code/Stereo Oscillation/OscillationsO.wav"
-    destinationPath2 = "./code/Stereo Oscillation/OscillationsmonoO.wav"
+    filepath1 = "./Oscillations.wav"
+    filepath2 = "./Oscillationsmono.wav"
+    destinationPath1 = "./OscillationsO.wav"
+    destinationPath2 = "./OscillationsmonoO.wav"
 
     #Read from wav files
     soundfilestereo = wavfile.read(filepath1)

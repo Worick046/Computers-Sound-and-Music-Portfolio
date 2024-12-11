@@ -38,7 +38,7 @@ if __name__ == "__main__":
     #Play initial wave
     sd.play(wave)
     sd.wait()
-    wavfile.write("./code/DFT/wave.wav", 48000, wave)
+    wavfile.write("./wave.wav", 48000, wave)
 
     #Perform DFT and reconstruct wave
     fwave = computeDFT(wave)
@@ -57,5 +57,5 @@ if __name__ == "__main__":
 
     sd.play(newWave)
     sd.wait()
-    wavfile.write("./code/DFT/reconstructedWave.wav", 48000, wave)
+    wavfile.write("./reconstructedWave.wav", 48000, wave)
     
